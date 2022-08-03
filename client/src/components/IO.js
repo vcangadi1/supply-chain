@@ -4,6 +4,7 @@ import CreateProcess from "../modals/CreateProcess";
 import CreateOutput from "../modals/CreateOutput";
 import Cards from "./Cards";
 import Axios from 'axios';
+import {v4 as uuidv4} from 'uuid';
 
 const IO = () => {
     const [inModal, setinModal] = useState(false);
@@ -14,7 +15,7 @@ const IO = () => {
     const [pList, setpList] = useState([]);
     const [outputList, setOutputList] = useState([]);
 
-    // useEffect(() => {
+    useEffect(() => {
     //     Axios.get('http://localhost:3001/api/get/input').then(res => {
     //         let inArr = res.data.map(item => {
     //             return {
@@ -56,56 +57,70 @@ const IO = () => {
     //             setOutputList(outObj);
     //         }
     //     });
-    // }, []);
+    }, []);
     
     const submitbtn = () => {
         
-        let pTemp = pList;
-        let inTemp = inputList;
-        inTemp.forEach(item => {
-            pTemp.forEach(pItem => {
-                item.ProcessName = pItem.ProcessName;
-                item.pDescription = pItem.pDescription;
-                item.pNotes = pItem.pNotes;
-                try {
-                    Axios.post('http://localhost:3001/api/insert/input', {
-                        inMaterial: item.inMaterial,
-                        inForm: item.inForm,
-                        inDescription: item.inDescription,
-                        ProcessName: item.ProcessName,
-                        pDescription: item.pDescription,
-                        pNotes: item.pNotes
-                    });
-                } catch (error) {
-                    console.log(error);
-                } finally {
-                    console.log("Successfully submitted");
-                }
-            });
-        });
+        // uuid v4 is used to generate a unique id for each process
+        let id = uuidv4();
 
-        let outTemp = outputList;
-        outTemp.forEach(item => {
-            pTemp.forEach(pItem => {
-                item.ProcessName = pItem.ProcessName;
-                item.pDescription = pItem.pDescription;
-                item.pNotes = pItem.pNotes;
-                try {
-                    Axios.post('http://localhost:3001/api/insert/output', {
-                        outMaterial: item.outMaterial,
-                        outForm: item.outForm,
-                        outDescription: item.outDescription,
-                        ProcessName: item.ProcessName,
-                        pDescription: item.pDescription,
-                        pNotes: item.pNotes
-                    });
-                } catch (error) {
-                    console.log(error);
-                } finally {
-                    console.log("Successfully submitted");
-                }
-            });
-        });
+        try {
+            // Process 
+            let pTemp = JSON.parse(localStorage.getItem("pList"));
+            try {
+                Axios.post('http://localhost:3001/api/insert/process', {
+                    id,
+                    ProcessName: pTemp[0].ProcessName,
+                    pDescription: pTemp[0].pDescription,
+                    pNotes: pTemp[0].pNotes
+                }).then(res => {console.log(res);});
+            } catch (error) {
+                console.log(error);
+            } finally {
+                console.log('Process Inserted');
+                // Input
+                let inTemp = JSON.parse(localStorage.getItem("inputList"));
+                inTemp.forEach(item => {
+                    try {
+                        Axios.post('http://localhost:3001/api/insert/input', {
+                            id,
+                            inMaterial: item.inMaterial,
+                            inForm: item.inForm,
+                            inDescription: item.inDescription
+                        });
+                    } catch (error) {
+                        console.log(error);
+                    } finally {
+                        console.log('Input Inserted');
+                    }
+                });
+
+                // Output
+                let outTemp = JSON.parse(localStorage.getItem("outputList"));
+                outTemp.forEach(item => {
+                    try {
+                        Axios.post('http://localhost:3001/api/insert/output', {
+                            id,
+                            outMaterial: item.outMaterial,
+                            outForm: item.outForm,
+                            outDescription: item.outDescription
+                        });
+                    } catch (error) {
+                        console.log(error);
+                    } finally {
+                        console.log('Output Inserted');
+                    }
+                });
+            }
+                
+        } catch (error) {
+            console.log(error);
+        } finally {
+            localStorage.removeItem("pList");
+            localStorage.removeItem("inputList");
+            localStorage.removeItem("outputList");
+            window.location.reload();
+        }
     }
 
     const inToggle = () => setinModal(!inModal);

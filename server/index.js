@@ -3,7 +3,7 @@ const mysql = require('mysql');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const uuidv4 = require('uuid').v4;
-console.log(uuidv4());
+
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
@@ -14,7 +14,7 @@ const db = mysql.createConnection({
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({origin: true, credentials: true}));
 
 
 // Get data from database
@@ -33,10 +33,9 @@ app.get('/api/get/:uid', (req, res) => {
 
 app.post('/api/insert/input', (req, res) => {
 
-    const { inMaterial, inForm, inDescription, ProcessName, pDescription, pNotes } = req.body;
-    console.log(inMaterial);
-    const sqlInsert = `INSERT INTO input_process (inMaterial, inForm, inDescription, ProcessName, pDescription, pNotes) VALUES (?, ?, ?, ?, ?, ?)`;
-    db.query(sqlInsert, [inMaterial, inForm, inDescription, ProcessName, pDescription, pNotes], (err, result) => {
+    const { id, inMaterial, inForm, inDescription } = req.body;
+    const sqlInsert = `INSERT INTO input (id, inMaterial, inForm, inDescription) VALUES (?, ?, ?, ?)`;
+    db.query(sqlInsert, [id, inMaterial, inForm, inDescription], (err, result) => {
         if (err) {
             console.log(err);
             res.sendStatus(500);
@@ -46,10 +45,9 @@ app.post('/api/insert/input', (req, res) => {
 
 app.post('/api/insert/process', (req, res) => {
 
-    const { ProcessName, pDescription, pNotes } = req.body;
-    console.log(inMaterial);
-    const sqlInsert = `INSERT INTO input_process (inMaterial, inForm, inDescription, ProcessName, pDescription, pNotes) VALUES (?, ?, ?, ?, ?, ?)`;
-    db.query(sqlInsert, [inMaterial, inForm, inDescription, ProcessName, pDescription, pNotes], (err, result) => {
+    const { id, ProcessName, pDescription, pNotes } = req.body;
+    const sqlInsert = `INSERT INTO process (id, ProcessName, pDescription, pNotes) VALUES (?, ?, ?, ?)`;
+    db.query(sqlInsert, [id, ProcessName, pDescription, pNotes], (err, result) => {
         if (err) {
             console.log(err);
             res.sendStatus(500);
@@ -59,9 +57,9 @@ app.post('/api/insert/process', (req, res) => {
 
 app.post('/api/insert/output', (req, res) => {
 
-    const { outMaterial, outForm, outDescription, ProcessName, pDescription, pNotes } = req.body;
-    const sqlInsert = `INSERT INTO output_process (outMaterial, outForm, outDescription, ProcessName, pDescription, pNotes) VALUES (?, ?, ?, ?, ?, ?)`;
-    db.query(sqlInsert, [outMaterial, outForm, outDescription, ProcessName, pDescription, pNotes], (err, result) => {
+    const { id, outMaterial, outForm, outDescription } = req.body;
+    const sqlInsert = `INSERT INTO output (id, outMaterial, outForm, outDescription) VALUES (?, ?, ?, ?)`;
+    db.query(sqlInsert, [id, outMaterial, outForm, outDescription], (err, result) => {
         if (err) {
             console.log(err);
             res.sendStatus(500);
